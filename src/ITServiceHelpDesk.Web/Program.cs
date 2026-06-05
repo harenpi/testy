@@ -28,13 +28,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(
         Environment.GetEnvironmentVariable("DATABASE_URL")
         ?? builder.Configuration.GetConnectionString("DefaultConnection"),
-        sqlOptions =>
-        {
-            sqlOptions.EnableRetryOnFailure(
-                maxRetryCount: 3,
-                maxRetryDelay: TimeSpan.FromSeconds(10),
-                errorNumbersToAdd: null);
-        }));
+        sqlOptions => sqlOptions.EnableRetryOnFailure(3)));
 
 // ============================================
 // IDENTITY CONFIGURATION
@@ -224,7 +218,12 @@ Log.Information("Environment: {Environment}", app.Environment.EnvironmentName);
 
 try
 {
-    app.Run();
+    using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate();
+}
+	app.Run();
 }
 catch (Exception ex)
 {
