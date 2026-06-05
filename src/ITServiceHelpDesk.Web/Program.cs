@@ -235,8 +235,8 @@ try
         var dbContext = dbScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         dbContext.Database.EnsureCreated();
     }
-}
-	app.Run();
+
+    app.Run();
 }
 catch (Exception ex)
 {
