@@ -230,14 +230,11 @@ Log.Information("Environment: {Environment}", app.Environment.EnvironmentName);
 
 try
 {
-    using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    db.Database.EnsureCreated();
-}
+    using (var dbScope = app.Services.CreateScope())
+    {
+        var dbContext = dbScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        dbContext.Database.EnsureCreated();
+    }
 }
 	app.Run();
 }
