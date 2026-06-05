@@ -25,7 +25,8 @@ builder.Host.UseSerilog();
 // DATABASE CONFIGURATION
 // ============================================
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
+    options.UseNpgsql(Environment.GetEnvironmentVariable("DATABASE_URL") 
+    ?? builder.Configuration.GetConnectionString("DefaultConnection"))),
         sqlOptions =>
         {
             sqlOptions.EnableRetryOnFailure(
