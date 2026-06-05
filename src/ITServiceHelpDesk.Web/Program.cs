@@ -24,10 +24,22 @@ builder.Host.UseSerilog();
 // ============================================
 // DATABASE CONFIGURATION
 // ============================================
+var rawUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+string connectionString;
+
+if (!string.IsNullOrEmpty(rawUrl))
+{
+    var uri = new Uri(rawUrl);
+    var userInfo = uri.UserInfo.Split(':');
+    connectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
+}
+else
+{
+    connectionString = builder.Configuration.GetConnectionString("DefaultConnection")!;
+}
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(
-        Environment.GetEnvironmentVariable("DATABASE_URL")
-        ?? builder.Configuration.GetConnectionString("DefaultConnection"),
+    options.UseNpgsql(connectionString,
         sqlOptions => sqlOptions.EnableRetryOnFailure(3)));
 
 // ============================================
