@@ -1,0 +1,587 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); }
+.app { display: flex; height: 640px; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); overflow: hidden; background: var(--color-background-primary); }
+.sidebar { width: 220px; min-width: 220px; background: #1e2330; display: flex; flex-direction: column; padding: 0; }
+.sidebar-brand { padding: 18px 16px 14px; border-bottom: 0.5px solid rgba(255,255,255,0.08); }
+.sidebar-brand .logo { display: flex; align-items: center; gap: 8px; }
+.sidebar-brand .logo-icon { width: 28px; height: 28px; background: #4f6ef7; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+.sidebar-brand .logo-icon i { color: #fff; font-size: 16px; }
+.sidebar-brand .logo-text { color: #fff; font-size: 13px; font-weight: 500; }
+.sidebar-brand .logo-sub { color: rgba(255,255,255,0.4); font-size: 11px; }
+.sidebar-nav { flex: 1; padding: 12px 8px; overflow-y: auto; }
+.nav-section { margin-bottom: 16px; }
+.nav-section-label { color: rgba(255,255,255,0.3); font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; padding: 0 8px; margin-bottom: 4px; }
+.nav-item { display: flex; align-items: center; gap: 8px; padding: 7px 8px; border-radius: 6px; cursor: pointer; color: rgba(255,255,255,0.55); font-size: 13px; transition: background 0.15s; }
+.nav-item:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.85); }
+.nav-item.active { background: rgba(79,110,247,0.25); color: #7f9fff; }
+.nav-item i { font-size: 16px; }
+.nav-badge { margin-left: auto; background: rgba(79,110,247,0.4); color: #9ab0ff; font-size: 10px; padding: 1px 6px; border-radius: 10px; }
+.sidebar-user { padding: 12px 16px; border-top: 0.5px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: 8px; }
+.sidebar-user .avatar { width: 28px; height: 28px; border-radius: 50%; background: #4f6ef7; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #fff; font-weight: 500; }
+.sidebar-user .user-info .name { color: rgba(255,255,255,0.8); font-size: 12px; }
+.sidebar-user .user-info .role { color: rgba(255,255,255,0.35); font-size: 11px; }
+.sidebar-user .logout { margin-left: auto; color: rgba(255,255,255,0.25); font-size: 14px; cursor: pointer; }
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.topbar { padding: 12px 20px; border-bottom: 0.5px solid var(--color-border-tertiary); display: flex; align-items: center; justify-content: space-between; background: var(--color-background-primary); }
+.topbar .page-title { font-size: 15px; font-weight: 500; color: var(--color-text-primary); }
+.topbar .topbar-actions { display: flex; align-items: center; gap: 8px; }
+.topbar .notif-btn { position: relative; color: var(--color-text-secondary); font-size: 18px; cursor: pointer; }
+.notif-dot { width: 7px; height: 7px; background: #4f6ef7; border-radius: 50%; position: absolute; top: 0; right: 0; }
+.content { flex: 1; overflow-y: auto; padding: 20px; }
+.screen { display: none; }
+.screen.active { display: block; }
+.tab-nav { display: flex; gap: 4px; flex-wrap: wrap; padding: 8px 20px 0; background: var(--color-background-secondary); border-bottom: 0.5px solid var(--color-border-tertiary); }
+.tab-btn { padding: 6px 12px; font-size: 12px; border: none; background: none; cursor: pointer; color: var(--color-text-secondary); border-bottom: 2px solid transparent; margin-bottom: -0.5px; border-radius: 4px 4px 0 0; }
+.tab-btn.active { color: #4f6ef7; border-bottom-color: #4f6ef7; font-weight: 500; }
+.stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; margin-bottom: 20px; }
+.stat-card { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 14px 16px; }
+.stat-label { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 4px; }
+.stat-value { font-size: 22px; font-weight: 500; color: var(--color-text-primary); }
+.stat-sub { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+.stat-value.blue { color: #4f6ef7; }
+.stat-value.teal { color: #1D9E75; }
+.stat-value.amber { color: #BA7517; }
+.stat-value.red { color: #A32D2D; }
+.card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 16px; margin-bottom: 16px; }
+.card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.card-title { font-size: 14px; font-weight: 500; color: var(--color-text-primary); }
+.ph-row { height: 14px; background: var(--color-background-secondary); border-radius: 4px; margin-bottom: 8px; }
+.ph-row.short { width: 55%; }
+.ph-row.med { width: 75%; }
+.badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
+.badge-new { background: #E1F5EE; color: #0F6E56; }
+.badge-inprogress { background: #EEEDFE; color: #3C3489; }
+.badge-waiting { background: #FAEEDA; color: #633806; }
+.badge-resolved { background: #EAF3DE; color: #27500A; }
+.badge-closed { background: #F1EFE8; color: #444441; }
+.badge-low { background: #EAF3DE; color: #27500A; }
+.badge-medium { background: #FAEEDA; color: #633806; }
+.badge-high { background: #FCEBEB; color: #791F1F; }
+.ticket-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.ticket-table th { text-align: left; color: var(--color-text-secondary); font-weight: 500; font-size: 12px; padding: 8px 10px; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.ticket-table td { padding: 10px; border-bottom: 0.5px solid var(--color-border-tertiary); color: var(--color-text-primary); vertical-align: middle; }
+.ticket-table tr:hover td { background: var(--color-background-secondary); }
+.ticket-id { color: var(--color-text-secondary); font-size: 11px; }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; font-size: 13px; border-radius: var(--border-radius-md); cursor: pointer; border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--color-text-primary); }
+.btn-primary { background: #4f6ef7; color: #fff; border-color: #4f6ef7; }
+.btn-sm { padding: 4px 10px; font-size: 12px; }
+.form-group { margin-bottom: 14px; }
+.form-label { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 4px; display: block; }
+.form-input { width: 100%; padding: 8px 10px; font-size: 13px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: var(--color-background-primary); color: var(--color-text-primary); }
+.form-select { width: 100%; padding: 8px 10px; font-size: 13px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: var(--color-background-primary); color: var(--color-text-primary); }
+.form-textarea { width: 100%; padding: 8px 10px; font-size: 13px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: var(--color-background-primary); color: var(--color-text-primary); resize: none; height: 80px; }
+.form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.divider { height: 0.5px; background: var(--color-border-tertiary); margin: 16px 0; }
+.empty-hint { text-align: center; padding: 32px; color: var(--color-text-secondary); font-size: 13px; }
+.empty-hint i { font-size: 28px; display: block; margin-bottom: 8px; opacity: 0.4; }
+.filter-row { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+.filter-chip { padding: 4px 12px; font-size: 12px; border: 0.5px solid var(--color-border-tertiary); border-radius: 20px; cursor: pointer; color: var(--color-text-secondary); background: var(--color-background-primary); }
+.filter-chip.active { background: #4f6ef7; color: #fff; border-color: #4f6ef7; }
+.progress-steps { display: flex; align-items: center; gap: 0; margin-bottom: 20px; }
+.step { display: flex; align-items: center; gap: 0; flex: 1; }
+.step-circle { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; flex-shrink: 0; }
+.step-circle.done { background: #4f6ef7; color: #fff; }
+.step-circle.active { background: #fff; border: 2px solid #4f6ef7; color: #4f6ef7; }
+.step-circle.todo { background: var(--color-background-secondary); color: var(--color-text-secondary); }
+.step-line { flex: 1; height: 1px; background: var(--color-border-tertiary); }
+.step-line.done { background: #4f6ef7; }
+.step-label { font-size: 11px; color: var(--color-text-secondary); margin-top: 4px; }
+.login-wrap { min-height: 640px; display: flex; align-items: center; justify-content: center; background: #0f1420; }
+.login-card { background: #1a2035; border: 0.5px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 32px 28px; width: 340px; }
+.login-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; justify-content: center; }
+.login-logo .icon { width: 36px; height: 36px; background: #4f6ef7; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.login-logo .icon i { color: #fff; font-size: 20px; }
+.login-logo .text { color: #fff; font-size: 15px; font-weight: 500; }
+.login-title { color: rgba(255,255,255,0.9); font-size: 18px; font-weight: 500; margin-bottom: 6px; text-align: center; }
+.login-sub { color: rgba(255,255,255,0.4); font-size: 13px; text-align: center; margin-bottom: 24px; }
+.login-input { width: 100%; background: rgba(255,255,255,0.06); border: 0.5px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 10px 12px; color: rgba(255,255,255,0.8); font-size: 13px; margin-bottom: 12px; }
+.login-btn-ms { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 0.5px solid rgba(255,255,255,0.12); border-radius: 8px; color: rgba(255,255,255,0.7); font-size: 13px; cursor: pointer; margin-top: 12px; }
+.login-btn-primary { width: 100%; padding: 10px; background: #4f6ef7; border: none; border-radius: 8px; color: #fff; font-size: 13px; cursor: pointer; margin-top: 4px; }
+.login-divider { display: flex; align-items: center; gap: 10px; margin: 14px 0; }
+.login-divider span { color: rgba(255,255,255,0.2); font-size: 12px; }
+.login-divider-line { flex: 1; height: 0.5px; background: rgba(255,255,255,0.1); }
+.chart-bar-wrap { display: flex; align-items: flex-end; gap: 8px; height: 90px; margin-top: 8px; }
+.bar { background: #4f6ef7; border-radius: 3px 3px 0 0; opacity: 0.8; flex: 1; }
+.chart-labels { display: flex; gap: 8px; margin-top: 4px; }
+.chart-label { flex: 1; font-size: 10px; color: var(--color-text-secondary); text-align: center; }
+.user-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.user-row:last-child { border-bottom: none; }
+.u-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--color-background-info, #E6F1FB); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; color: #185FA5; flex-shrink: 0; }
+.u-name { font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
+.u-email { font-size: 11px; color: var(--color-text-secondary); }
+.u-role { margin-left: auto; }
+.audit-row { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.audit-row:last-child { border-bottom: none; }
+.audit-dot { width: 8px; height: 8px; border-radius: 50%; background: #4f6ef7; margin-top: 4px; flex-shrink: 0; }
+.audit-text { font-size: 12px; color: var(--color-text-secondary); }
+.audit-time { font-size: 11px; color: var(--color-text-secondary); margin-left: auto; white-space: nowrap; }
+.comment-block { padding: 10px 12px; background: var(--color-background-secondary); border-radius: var(--border-radius-md); margin-bottom: 10px; }
+.comment-meta { font-size: 11px; color: var(--color-text-secondary); margin-bottom: 4px; }
+.comment-text { font-size: 13px; color: var(--color-text-primary); }
+.attachment-row { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--color-background-secondary); border-radius: var(--border-radius-md); margin-bottom: 6px; font-size: 12px; }
+.attachment-row i { color: var(--color-text-secondary); }
+.details-grid { display: grid; grid-template-columns: 1fr 280px; gap: 16px; }
+.meta-item { margin-bottom: 12px; }
+.meta-label { font-size: 11px; color: var(--color-text-secondary); margin-bottom: 2px; }
+.meta-value { font-size: 13px; color: var(--color-text-primary); }
+</style>
+
+
+<div class="app">
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo">
+        <div class="logo-icon"><i class="ti ti-headset" aria-hidden="true"></i></div>
+        <div>
+          <div class="logo-text">IT HelpDesk</div>
+          <div class="logo-sub">Service portal</div>
+        </div>
+      </div>
+    </div>
+    <div class="sidebar-nav" id="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-label">Overview</div>
+        <div class="nav-item active" data-screen="dashboard" onclick="switchScreen('dashboard',this)"><i class="ti ti-layout-dashboard" aria-hidden="true"></i> Dashboard</div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Tickets</div>
+        <div class="nav-item" data-screen="my-tickets" onclick="switchScreen('my-tickets',this)"><i class="ti ti-ticket" aria-hidden="true"></i> My tickets <span class="nav-badge">3</span></div>
+        <div class="nav-item" data-screen="new-ticket" onclick="switchScreen('new-ticket',this)"><i class="ti ti-plus" aria-hidden="true"></i> New ticket</div>
+        <div class="nav-item" data-screen="assigned" onclick="switchScreen('assigned',this)"><i class="ti ti-user-check" aria-hidden="true"></i> Assigned to me</div>
+        <div class="nav-item" data-screen="unassigned" onclick="switchScreen('unassigned',this)"><i class="ti ti-inbox" aria-hidden="true"></i> Unassigned <span class="nav-badge">5</span></div>
+        <div class="nav-item" data-screen="all-tickets" onclick="switchScreen('all-tickets',this)"><i class="ti ti-list" aria-hidden="true"></i> All tickets</div>
+        <div class="nav-item" data-screen="ticket-details" onclick="switchScreen('ticket-details',this)"><i class="ti ti-file-text" aria-hidden="true"></i> Ticket details</div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Account</div>
+        <div class="nav-item" data-screen="profile" onclick="switchScreen('profile',this)"><i class="ti ti-user" aria-hidden="true"></i> My profile</div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Admin</div>
+        <div class="nav-item" data-screen="admin-dashboard" onclick="switchScreen('admin-dashboard',this)"><i class="ti ti-shield" aria-hidden="true"></i> Admin panel</div>
+        <div class="nav-item" data-screen="admin-users" onclick="switchScreen('admin-users',this)"><i class="ti ti-users" aria-hidden="true"></i> Users</div>
+        <div class="nav-item" data-screen="admin-categories" onclick="switchScreen('admin-categories',this)"><i class="ti ti-tag" aria-hidden="true"></i> Categories</div>
+        <div class="nav-item" data-screen="audit-log" onclick="switchScreen('audit-log',this)"><i class="ti ti-history" aria-hidden="true"></i> Audit log</div>
+      </div>
+    </div>
+    <div class="sidebar-user">
+      <div class="avatar">JD</div>
+      <div class="user-info">
+        <div class="name">[User name]</div>
+        <div class="role">[Role]</div>
+      </div>
+      <i class="ti ti-logout logout" aria-hidden="true"></i>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="tab-nav" id="tab-nav" style="display:none"></div>
+    <div class="topbar" id="topbar">
+      <span class="page-title" id="page-title">Dashboard</span>
+      <div class="topbar-actions">
+        <span class="notif-btn"><i class="ti ti-bell" aria-hidden="true"></i><span class="notif-dot"></span></span>
+      </div>
+    </div>
+    <div class="content">
+
+      <!-- LOGIN -->
+      <div class="screen" id="screen-login" style="margin: -20px; padding: 0;">
+        <div class="login-wrap">
+          <div class="login-card">
+            <div class="login-logo">
+              <div class="icon"><i class="ti ti-headset" aria-hidden="true"></i></div>
+              <div class="text">IT HelpDesk</div>
+            </div>
+            <div class="login-title">Sign in</div>
+            <div class="login-sub">Use your Microsoft account or admin credentials</div>
+            <button class="login-btn-ms"><i class="ti ti-brand-windows" style="font-size:16px" aria-hidden="true"></i> Sign in with Microsoft</button>
+            <div class="login-divider"><div class="login-divider-line"></div><span>or</span><div class="login-divider-line"></div></div>
+            <input class="login-input" type="text" placeholder="[Admin email]" readonly>
+            <input class="login-input" type="password" placeholder="[Password]" readonly>
+            <button class="login-btn-primary">Sign in</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- DASHBOARD -->
+      <div class="screen active" id="screen-dashboard">
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-label">All tickets</div><div class="stat-value blue">24</div><div class="stat-sub">total open</div></div>
+          <div class="stat-card"><div class="stat-label">In progress</div><div class="stat-value">8</div><div class="stat-sub">being handled</div></div>
+          <div class="stat-card"><div class="stat-label">Waiting</div><div class="stat-value amber">3</div><div class="stat-sub">for user response</div></div>
+          <div class="stat-card"><div class="stat-label">Resolved</div><div class="stat-value teal">13</div><div class="stat-sub">this month</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Recent tickets</div><span class="btn btn-sm">View all</span></div>
+            <div class="ph-row"></div><div class="ph-row med"></div><div class="ph-row short"></div><div class="ph-row"></div><div class="ph-row med"></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Tickets by status</div></div>
+            <div class="chart-bar-wrap">
+              <div class="bar" style="height:70%"></div>
+              <div class="bar" style="height:45%;opacity:0.6"></div>
+              <div class="bar" style="height:90%;background:#1D9E75"></div>
+              <div class="bar" style="height:30%;background:#BA7517"></div>
+              <div class="bar" style="height:55%;background:#888780"></div>
+            </div>
+            <div class="chart-labels">
+              <div class="chart-label">New</div>
+              <div class="chart-label">In prog.</div>
+              <div class="chart-label">Resolved</div>
+              <div class="chart-label">Waiting</div>
+              <div class="chart-label">Closed</div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <div class="card-header"><div class="card-title">My recent activity</div></div>
+          <div class="ph-row med"></div><div class="ph-row"></div><div class="ph-row short"></div>
+        </div>
+      </div>
+
+      <!-- MY TICKETS -->
+      <div class="screen" id="screen-my-tickets">
+        <div class="filter-row">
+          <span class="filter-chip active">All</span>
+          <span class="filter-chip">New</span>
+          <span class="filter-chip">In progress</span>
+          <span class="filter-chip">Waiting</span>
+          <span class="filter-chip">Resolved</span>
+          <div style="margin-left:auto"><button class="btn btn-primary btn-sm"><i class="ti ti-plus" aria-hidden="true"></i> New ticket</button></div>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <table class="ticket-table">
+            <thead><tr><th>#</th><th>Title</th><th>Category</th><th>Priority</th><th>Status</th><th>Date</th></tr></thead>
+            <tbody>
+              <tr><td class="ticket-id">#1042</td><td>[Ticket title placeholder]</td><td>[Hardware]</td><td><span class="badge badge-high">High</span></td><td><span class="badge badge-inprogress">In progress</span></td><td style="color:var(--color-text-secondary);font-size:12px">May 15</td></tr>
+              <tr><td class="ticket-id">#1038</td><td>[Ticket title placeholder]</td><td>[Software]</td><td><span class="badge badge-medium">Medium</span></td><td><span class="badge badge-waiting">Waiting</span></td><td style="color:var(--color-text-secondary);font-size:12px">May 12</td></tr>
+              <tr><td class="ticket-id">#1031</td><td>[Ticket title placeholder]</td><td>[Network]</td><td><span class="badge badge-low">Low</span></td><td><span class="badge badge-resolved">Resolved</span></td><td style="color:var(--color-text-secondary);font-size:12px">May 10</td></tr>
+              <tr><td class="ticket-id">#1027</td><td>[Ticket title placeholder]</td><td>[Access]</td><td><span class="badge badge-high">High</span></td><td><span class="badge badge-new">New</span></td><td style="color:var(--color-text-secondary);font-size:12px">May 8</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- NEW TICKET -->
+      <div class="screen" id="screen-new-ticket">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Ticket details</div></div>
+          <div class="form-group">
+            <label class="form-label">Title *</label>
+            <input class="form-input" type="text" placeholder="[Short summary of the issue]" readonly>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description *</label>
+            <textarea class="form-textarea" placeholder="[Describe the issue in detail — steps to reproduce, impact, etc.]" readonly></textarea>
+          </div>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Category</label>
+              <select class="form-select"><option>[Select category]</option><option>Hardware</option><option>Software</option><option>Network</option></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Priority</label>
+              <select class="form-select"><option>[Select priority]</option><option>Low</option><option>Medium</option><option>High</option></select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Attachments</label>
+            <div style="border: 0.5px dashed var(--color-border-secondary); border-radius:var(--border-radius-md); padding:20px; text-align:center; color:var(--color-text-secondary); font-size:13px"><i class="ti ti-upload" style="font-size:20px;display:block;margin-bottom:6px;opacity:0.5" aria-hidden="true"></i>[Drag &amp; drop files or click to browse]</div>
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn">Cancel</button>
+            <button class="btn btn-primary">Submit ticket</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ASSIGNED -->
+      <div class="screen" id="screen-assigned">
+        <div class="stat-grid" style="grid-template-columns:repeat(3,1fr)">
+          <div class="stat-card"><div class="stat-label">Assigned to me</div><div class="stat-value">7</div></div>
+          <div class="stat-card"><div class="stat-label">In progress</div><div class="stat-value blue">4</div></div>
+          <div class="stat-card"><div class="stat-label">Waiting</div><div class="stat-value amber">3</div></div>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <table class="ticket-table">
+            <thead><tr><th>#</th><th>Title</th><th>Requester</th><th>Priority</th><th>Status</th><th>Updated</th></tr></thead>
+            <tbody>
+              <tr><td class="ticket-id">#1041</td><td>[Ticket title]</td><td>[User name]</td><td><span class="badge badge-high">High</span></td><td><span class="badge badge-inprogress">In progress</span></td><td style="color:var(--color-text-secondary);font-size:12px">Today</td></tr>
+              <tr><td class="ticket-id">#1036</td><td>[Ticket title]</td><td>[User name]</td><td><span class="badge badge-medium">Medium</span></td><td><span class="badge badge-waiting">Waiting</span></td><td style="color:var(--color-text-secondary);font-size:12px">Yesterday</td></tr>
+              <tr><td class="ticket-id">#1029</td><td>[Ticket title]</td><td>[User name]</td><td><span class="badge badge-low">Low</span></td><td><span class="badge badge-inprogress">In progress</span></td><td style="color:var(--color-text-secondary);font-size:12px">May 14</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- UNASSIGNED -->
+      <div class="screen" id="screen-unassigned">
+        <div class="card" style="padding:0;overflow:hidden">
+          <table class="ticket-table">
+            <thead><tr><th>#</th><th>Title</th><th>Category</th><th>Priority</th><th>Submitted</th><th></th></tr></thead>
+            <tbody>
+              <tr><td class="ticket-id">#1045</td><td>[Ticket title]</td><td>[Hardware]</td><td><span class="badge badge-high">High</span></td><td style="color:var(--color-text-secondary);font-size:12px">Today 09:12</td><td><button class="btn btn-sm btn-primary">Assign</button></td></tr>
+              <tr><td class="ticket-id">#1044</td><td>[Ticket title]</td><td>[Access]</td><td><span class="badge badge-medium">Medium</span></td><td style="color:var(--color-text-secondary);font-size:12px">Today 08:45</td><td><button class="btn btn-sm btn-primary">Assign</button></td></tr>
+              <tr><td class="ticket-id">#1043</td><td>[Ticket title]</td><td>[Software]</td><td><span class="badge badge-low">Low</span></td><td style="color:var(--color-text-secondary);font-size:12px">Yesterday</td><td><button class="btn btn-sm btn-primary">Assign</button></td></tr>
+              <tr><td class="ticket-id">#1040</td><td>[Ticket title]</td><td>[Network]</td><td><span class="badge badge-high">High</span></td><td style="color:var(--color-text-secondary);font-size:12px">May 15</td><td><button class="btn btn-sm btn-primary">Assign</button></td></tr>
+              <tr><td class="ticket-id">#1039</td><td>[Ticket title]</td><td>[Other]</td><td><span class="badge badge-medium">Medium</span></td><td style="color:var(--color-text-secondary);font-size:12px">May 14</td><td><button class="btn btn-sm btn-primary">Assign</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ALL TICKETS -->
+      <div class="screen" id="screen-all-tickets">
+        <div class="filter-row">
+          <span class="filter-chip active">All</span>
+          <span class="filter-chip">New</span>
+          <span class="filter-chip">In progress</span>
+          <span class="filter-chip">Waiting</span>
+          <span class="filter-chip">Resolved</span>
+          <input class="form-input" type="text" placeholder="Search tickets..." style="width:180px;margin-left:auto" readonly>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <table class="ticket-table">
+            <thead><tr><th>#</th><th>Title</th><th>Requester</th><th>Agent</th><th>Priority</th><th>Status</th><th>Date</th></tr></thead>
+            <tbody>
+              <tr><td class="ticket-id">#1045</td><td>[Ticket title]</td><td>[User]</td><td>—</td><td><span class="badge badge-high">High</span></td><td><span class="badge badge-new">New</span></td><td style="color:var(--color-text-secondary);font-size:12px">Today</td></tr>
+              <tr><td class="ticket-id">#1042</td><td>[Ticket title]</td><td>[User]</td><td>[Agent]</td><td><span class="badge badge-medium">Medium</span></td><td><span class="badge badge-inprogress">In progress</span></td><td style="color:var(--color-text-secondary);font-size:12px">May 15</td></tr>
+              <tr><td class="ticket-id">#1038</td><td>[Ticket title]</td><td>[User]</td><td>[Agent]</td><td><span class="badge badge-low">Low</span></td><td><span class="badge badge-waiting">Waiting</span></td><td style="color:var(--color-text-secondary);font-size:12px">May 12</td></tr>
+              <tr><td class="ticket-id">#1031</td><td>[Ticket title]</td><td>[User]</td><td>[Agent]</td><td><span class="badge badge-medium">Medium</span></td><td><span class="badge badge-resolved">Resolved</span></td><td style="color:var(--color-text-secondary);font-size:12px">May 10</td></tr>
+              <tr><td class="ticket-id">#1027</td><td>[Ticket title]</td><td>[User]</td><td>—</td><td><span class="badge badge-high">High</span></td><td><span class="badge badge-new">New</span></td><td style="color:var(--color-text-secondary);font-size:12px">May 8</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TICKET DETAILS -->
+      <div class="screen" id="screen-ticket-details">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+          <span class="badge badge-inprogress" style="font-size:12px">In progress</span>
+          <span style="font-size:12px;color:var(--color-text-secondary)">#1042 · [Category] · <span class="badge badge-medium">Medium</span></span>
+          <button class="btn btn-sm" style="margin-left:auto"><i class="ti ti-edit" aria-hidden="true"></i> Edit</button>
+          <button class="btn btn-sm"><i class="ti ti-check" aria-hidden="true"></i> Resolve</button>
+        </div>
+        <div class="details-grid">
+          <div>
+            <div class="card">
+              <div class="card-header"><div class="card-title">[Ticket title placeholder — editable inline]</div></div>
+              <div style="font-size:13px;color:var(--color-text-secondary);line-height:1.6"><div class="ph-row"></div><div class="ph-row med"></div><div class="ph-row short"></div></div>
+              <div class="divider"></div>
+              <div class="card-title" style="margin-bottom:10px">Comments</div>
+              <div class="comment-block"><div class="comment-meta">[Agent name] · May 15, 14:32</div><div class="comment-text"><div class="ph-row med"></div></div></div>
+              <div class="comment-block"><div class="comment-meta">[User name] · May 15, 15:01</div><div class="comment-text"><div class="ph-row short"></div></div></div>
+              <div class="form-group" style="margin-top:10px">
+                <textarea class="form-textarea" placeholder="[Add a comment...]" readonly></textarea>
+                <div style="display:flex;gap:8px;margin-top:8px">
+                  <label style="font-size:12px;color:var(--color-text-secondary);display:flex;align-items:center;gap:4px"><input type="checkbox" style="width:auto"> Internal only</label>
+                  <button class="btn btn-primary btn-sm" style="margin-left:auto">Post comment</button>
+                </div>
+              </div>
+              <div class="divider"></div>
+              <div class="card-title" style="margin-bottom:10px">Attachments</div>
+              <div class="attachment-row"><i class="ti ti-file" aria-hidden="true"></i><span>[filename.pdf]</span><span style="margin-left:auto;color:var(--color-text-secondary);font-size:11px">248 KB</span></div>
+              <div class="attachment-row"><i class="ti ti-photo" aria-hidden="true"></i><span>[screenshot.png]</span><span style="margin-left:auto;color:var(--color-text-secondary);font-size:11px">1.2 MB</span></div>
+            </div>
+          </div>
+          <div>
+            <div class="card">
+              <div class="card-title" style="margin-bottom:12px">Ticket info</div>
+              <div class="meta-item"><div class="meta-label">Requester</div><div class="meta-value">[User name]</div></div>
+              <div class="meta-item"><div class="meta-label">Assigned agent</div><div class="meta-value">[Agent name]</div></div>
+              <div class="meta-item"><div class="meta-label">Created</div><div class="meta-value">May 15, 2026 — 09:12</div></div>
+              <div class="meta-item"><div class="meta-label">Last updated</div><div class="meta-value">May 15, 2026 — 15:01</div></div>
+              <div class="meta-item"><div class="meta-label">Status</div><div><span class="badge badge-inprogress">In progress</span></div></div>
+            </div>
+            <div class="card" style="margin-top:0">
+              <div class="card-title" style="margin-bottom:10px">History</div>
+              <div class="audit-row"><div class="audit-dot"></div><div><div class="audit-text">Status changed: New → In progress</div></div><div class="audit-time" style="font-size:11px;color:var(--color-text-secondary)">May 15</div></div>
+              <div class="audit-row"><div class="audit-dot" style="background:#1D9E75"></div><div><div class="audit-text">Assigned to [Agent name]</div></div><div class="audit-time" style="font-size:11px;color:var(--color-text-secondary)">May 15</div></div>
+              <div class="audit-row"><div class="audit-dot" style="background:#888780"></div><div><div class="audit-text">Ticket created by [User name]</div></div><div class="audit-time" style="font-size:11px;color:var(--color-text-secondary)">May 15</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROFILE -->
+      <div class="screen" id="screen-profile">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Personal details</div><button class="btn btn-sm"><i class="ti ti-edit" aria-hidden="true"></i> Edit</button></div>
+            <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+              <div style="width:56px;height:56px;border-radius:50%;background:#E6F1FB;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:500;color:#185FA5">JD</div>
+              <div>
+                <div style="font-size:15px;font-weight:500;color:var(--color-text-primary)">[Full name]</div>
+                <div style="font-size:12px;color:var(--color-text-secondary)">[email@company.com]</div>
+              </div>
+            </div>
+            <div class="divider"></div>
+            <div class="meta-item"><div class="meta-label">Department</div><div class="meta-value">[Department name]</div></div>
+            <div class="meta-item"><div class="meta-label">Role</div><div class="meta-value"><span class="badge badge-new">User</span></div></div>
+            <div class="meta-item"><div class="meta-label">Member since</div><div class="meta-value">March 2026</div></div>
+          </div>
+          <div class="card">
+            <div class="card-title" style="margin-bottom:12px">My ticket stats</div>
+            <div class="stat-grid" style="grid-template-columns:1fr 1fr;margin-bottom:0">
+              <div class="stat-card"><div class="stat-label">Submitted</div><div class="stat-value">12</div></div>
+              <div class="stat-card"><div class="stat-label">Open</div><div class="stat-value blue">3</div></div>
+              <div class="stat-card"><div class="stat-label">Resolved</div><div class="stat-value teal">8</div></div>
+              <div class="stat-card"><div class="stat-label">Avg. resolution</div><div class="stat-value" style="font-size:16px">2.4d</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Notifications</div></div>
+          <div class="ph-row med"></div><div class="ph-row"></div><div class="ph-row short"></div>
+        </div>
+      </div>
+
+      <!-- ADMIN DASHBOARD -->
+      <div class="screen" id="screen-admin-dashboard">
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-label">Total users</div><div class="stat-value">48</div></div>
+          <div class="stat-card"><div class="stat-label">Active agents</div><div class="stat-value blue">6</div></div>
+          <div class="stat-card"><div class="stat-label">Open tickets</div><div class="stat-value amber">24</div></div>
+          <div class="stat-card"><div class="stat-label">Categories</div><div class="stat-value">9</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+          <div class="card" style="cursor:pointer" onclick="switchScreen('admin-users',document.querySelector('[data-screen=admin-users]'))">
+            <div style="text-align:center;padding:8px">
+              <i class="ti ti-users" style="font-size:28px;color:#4f6ef7;display:block;margin-bottom:8px" aria-hidden="true"></i>
+              <div style="font-size:14px;font-weight:500;color:var(--color-text-primary)">Users</div>
+              <div style="font-size:12px;color:var(--color-text-secondary)">Manage roles &amp; access</div>
+            </div>
+          </div>
+          <div class="card" style="cursor:pointer" onclick="switchScreen('admin-categories',document.querySelector('[data-screen=admin-categories]'))">
+            <div style="text-align:center;padding:8px">
+              <i class="ti ti-tag" style="font-size:28px;color:#1D9E75;display:block;margin-bottom:8px" aria-hidden="true"></i>
+              <div style="font-size:14px;font-weight:500;color:var(--color-text-primary)">Categories</div>
+              <div style="font-size:12px;color:var(--color-text-secondary)">Ticket categories</div>
+            </div>
+          </div>
+          <div class="card" style="cursor:pointer" onclick="switchScreen('audit-log',document.querySelector('[data-screen=audit-log]'))">
+            <div style="text-align:center;padding:8px">
+              <i class="ti ti-history" style="font-size:28px;color:#BA7517;display:block;margin-bottom:8px" aria-hidden="true"></i>
+              <div style="font-size:14px;font-weight:500;color:var(--color-text-primary)">Audit log</div>
+              <div style="font-size:12px;color:var(--color-text-secondary)">System activity</div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <div class="card-header"><div class="card-title">Recent audit events</div></div>
+          <div class="audit-row"><div class="audit-dot"></div><div><div class="audit-text">[User name] created ticket #1045</div></div><div class="audit-time">09:34</div></div>
+          <div class="audit-row"><div class="audit-dot" style="background:#1D9E75"></div><div><div class="audit-text">[Agent] resolved ticket #1038</div></div><div class="audit-time">08:12</div></div>
+          <div class="audit-row"><div class="audit-dot" style="background:#BA7517"></div><div><div class="audit-text">[Admin] changed role of [User]</div></div><div class="audit-time">Yesterday</div></div>
+        </div>
+      </div>
+
+      <!-- ADMIN USERS -->
+      <div class="screen" id="screen-admin-users">
+        <div style="display:flex;gap:8px;margin-bottom:16px">
+          <input class="form-input" type="text" placeholder="Search users..." style="width:220px" readonly>
+          <select class="form-select" style="width:140px"><option>All roles</option><option>Admin</option><option>Agent</option><option>User</option></select>
+        </div>
+        <div class="card" style="padding:0 16px">
+          <div class="user-row">
+            <div class="u-avatar">AD</div>
+            <div><div class="u-name">[Admin name]</div><div class="u-email">[admin@helpdesk.local]</div></div>
+            <div class="u-role"><span class="badge badge-high">Admin</span></div>
+            <div style="margin-left:12px;display:flex;gap:6px"><button class="btn btn-sm">Role</button><button class="btn btn-sm">Deactivate</button></div>
+          </div>
+          <div class="user-row">
+            <div class="u-avatar" style="background:#E1F5EE;color:#0F6E56">AG</div>
+            <div><div class="u-name">[Agent name]</div><div class="u-email">[agent@company.com]</div></div>
+            <div class="u-role"><span class="badge badge-new">Agent</span></div>
+            <div style="margin-left:12px;display:flex;gap:6px"><button class="btn btn-sm">Role</button><button class="btn btn-sm">Deactivate</button></div>
+          </div>
+          <div class="user-row">
+            <div class="u-avatar" style="background:#EEEDFE;color:#3C3489">U1</div>
+            <div><div class="u-name">[User name]</div><div class="u-email">[user@company.com]</div></div>
+            <div class="u-role"><span class="badge badge-closed">User</span></div>
+            <div style="margin-left:12px;display:flex;gap:6px"><button class="btn btn-sm">Role</button><button class="btn btn-sm">Deactivate</button></div>
+          </div>
+          <div class="user-row">
+            <div class="u-avatar" style="background:#FAEEDA;color:#633806">U2</div>
+            <div><div class="u-name">[User name]</div><div class="u-email">[user2@company.com]</div></div>
+            <div class="u-role"><span class="badge badge-closed" style="background:#FAEEDA;color:#633806">Inactive</span></div>
+            <div style="margin-left:12px;display:flex;gap:6px"><button class="btn btn-sm">Role</button><button class="btn btn-sm btn-primary">Activate</button></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADMIN CATEGORIES -->
+      <div class="screen" id="screen-admin-categories">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
+          <button class="btn btn-primary btn-sm"><i class="ti ti-plus" aria-hidden="true"></i> Add category</button>
+        </div>
+        <div class="card" style="padding:0 16px">
+          <table class="ticket-table">
+            <thead><tr><th>Name</th><th>Description</th><th>Tickets</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+              <tr><td style="font-weight:500">[Hardware]</td><td style="color:var(--color-text-secondary);font-size:12px">[Category description]</td><td style="font-size:13px">14</td><td><span class="badge badge-new">Active</span></td><td><button class="btn btn-sm">Edit</button></td></tr>
+              <tr><td style="font-weight:500">[Software]</td><td style="color:var(--color-text-secondary);font-size:12px">[Category description]</td><td style="font-size:13px">9</td><td><span class="badge badge-new">Active</span></td><td><button class="btn btn-sm">Edit</button></td></tr>
+              <tr><td style="font-weight:500">[Network]</td><td style="color:var(--color-text-secondary);font-size:12px">[Category description]</td><td style="font-size:13px">7</td><td><span class="badge badge-new">Active</span></td><td><button class="btn btn-sm">Edit</button></td></tr>
+              <tr><td style="font-weight:500">[Access]</td><td style="color:var(--color-text-secondary);font-size:12px">[Category description]</td><td style="font-size:13px">3</td><td><span class="badge badge-closed">Inactive</span></td><td><button class="btn btn-sm">Edit</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- AUDIT LOG -->
+      <div class="screen" id="screen-audit-log">
+        <div class="filter-row">
+          <input class="form-input" type="text" placeholder="Search events..." style="width:220px" readonly>
+          <select class="form-select" style="width:140px"><option>All actions</option><option>Ticket created</option><option>Status changed</option><option>Role changed</option></select>
+          <input class="form-input" type="text" placeholder="Date from" style="width:110px" readonly>
+          <input class="form-input" type="text" placeholder="Date to" style="width:110px" readonly>
+        </div>
+        <div class="card" style="padding:0 16px">
+          <div class="audit-row"><div class="audit-dot"></div><div><div class="audit-text">[User name] created ticket #1045 — [Hardware]</div><div style="font-size:11px;color:var(--color-text-secondary);margin-top:2px">IP: [xxx.xxx.xxx.xxx]</div></div><div class="audit-time">Today 09:34</div></div>
+          <div class="audit-row"><div class="audit-dot" style="background:#1D9E75"></div><div><div class="audit-text">[Agent] changed status #1038 → Resolved</div><div style="font-size:11px;color:var(--color-text-secondary);margin-top:2px">IP: [xxx.xxx.xxx.xxx]</div></div><div class="audit-time">Today 08:12</div></div>
+          <div class="audit-row"><div class="audit-dot" style="background:#BA7517"></div><div><div class="audit-text">[Admin] assigned role Agent to [User name]</div><div style="font-size:11px;color:var(--color-text-secondary);margin-top:2px">IP: [xxx.xxx.xxx.xxx]</div></div><div class="audit-time">Yesterday 17:55</div></div>
+          <div class="audit-row"><div class="audit-dot" style="background:#BA7517"></div><div><div class="audit-text">[User] uploaded attachment to ticket #1041</div><div style="font-size:11px;color:var(--color-text-secondary);margin-top:2px">IP: [xxx.xxx.xxx.xxx]</div></div><div class="audit-time">Yesterday 14:20</div></div>
+          <div class="audit-row"><div class="audit-dot"></div><div><div class="audit-text">[User] posted comment on ticket #1042</div><div style="font-size:11px;color:var(--color-text-secondary);margin-top:2px">IP: [xxx.xxx.xxx.xxx]</div></div><div class="audit-time">May 15 11:03</div></div>
+          <div class="audit-row"><div class="audit-dot" style="background:#A32D2D"></div><div><div class="audit-text">[Admin] deactivated user [User name]</div><div style="font-size:11px;color:var(--color-text-secondary);margin-top:2px">IP: [xxx.xxx.xxx.xxx]</div></div><div class="audit-time">May 14 16:40</div></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:12px">
+          <button class="btn btn-sm">← Prev</button>
+          <span style="font-size:12px;color:var(--color-text-secondary)">Page 1 of 4</span>
+          <button class="btn btn-sm">Next →</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const screens = {
+  'login': { title: 'Sign in', hideTopbar: true },
+  'dashboard': { title: 'Dashboard' },
+  'my-tickets': { title: 'My tickets' },
+  'new-ticket': { title: 'New ticket' },
+  'assigned': { title: 'Assigned to me' },
+  'unassigned': { title: 'Unassigned tickets' },
+  'all-tickets': { title: 'All tickets' },
+  'ticket-details': { title: 'Ticket #1042' },
+  'profile': { title: 'My profile' },
+  'admin-dashboard': { title: 'Admin panel' },
+  'admin-users': { title: 'Users' },
+  'admin-categories': { title: 'Categories' },
+  'audit-log': { title: 'Audit log' }
+};
+function switchScreen(id, el) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const s = document.getElementById('screen-' + id);
+  if (s) s.classList.add('active');
+  if (el) el.classList.add('active');
+  const cfg = screens[id] || { title: id };
+  document.getElementById('page-title').textContent = cfg.title;
+  const topbar = document.getElementById('topbar');
+  if (cfg.hideTopbar) { topbar.style.display = 'none'; } else { topbar.style.display = ''; }
+}
+</script>
